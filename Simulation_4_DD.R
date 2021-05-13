@@ -56,33 +56,190 @@ time_series_q_4 <- sapply(Time_plot_4, model_parameters_4$q)
 plot(time_series_q_4, type="l")
 
 
-model_parameters_4_1 = list(
-  q = function(t, rate_4_1=0.001,init_q_4_1=0.001){
-    value_4_1 = t*rate_4_1 - init_q_4_1
-    return(value_4_1)
-  }, #harvest or stocking
-  s = 0.6, #survival rate fo juveniles to maturation
-  m_A = 0.4, #mortality rate of adults
-  f = 2, #fecundity of adult bass
-  c_FA = 0.3, #predation of planktivores by adult bass
-  c_JA = 0.1, #predation of juvenile bass by adult bass
-  c_JF = 0.5, #predation of juvenile bass by planktivorous fish
-  F_o = 200, #abundance of planktivorous fish in non-foraging arena
-  D_F = 0.09, #diffusion of planktivores between refuge and forage arena
-  v = 80, #rate at which J enter a foraging arena and become vulnerable
-  h = 80 #rate at which J hide in a refuge
-)
+#model_parameters_4_1 = list(
+  #q = function(t, rate_4_1=0.001,init_q_4_1=0.001){
+    #value_4_1 = t*rate_4_1 - init_q_4_1
+    #return(value_4_1)
+  #}, #harvest or stocking
+  #s = 0.6, #survival rate fo juveniles to maturation
+  #m_A = 0.4, #mortality rate of adults
+  #f = 2, #fecundity of adult bass
+  #c_FA = 0.3, #predation of planktivores by adult bass
+  #c_JA = 0.1, #predation of juvenile bass by adult bass
+  #c_JF = 0.5, #predation of juvenile bass by planktivorous fish
+  #F_o = 200, #abundance of planktivorous fish in non-foraging arena
+  #D_F = 0.09, #diffusion of planktivores between refuge and forage arena
+  #v = 80, #rate at which J enter a foraging arena and become vulnerable
+  #h = 80 #rate at which J hide in a refuge
+#)
 
-sim4_1 = deSolve::ode(y=init_cond_4,
-                    times = Time_plot_4,
-                    func = trophic_system_4,
-                    parms = model_parameters_4_1)
+#sim4_1 = deSolve::ode(y=init_cond_4,
+                    #times = Time_plot_4,
+                    #func = trophic_system_4,
+                    #parms = model_parameters_4_1)
 
-plot(sim4_1)
+#plot(sim4_1)
 
-time_series_q_4_1 <- sapply(Time_plot_4, model_parameters_4_1$q)
-plot(time_series_q_4_1, type="l")
+#time_series_q_4_1 <- sapply(Time_plot_4, model_parameters_4_1$q)
+#plot(time_series_q_4_1, type="l")
 
+
+library(dplyr)
+
+n_step_4 = length(Time_plot_4)
+
+calc_1st_deriv_4 = function(y,delta_4) (lead(y,1) - lag(y,1))/(2*delta_4)
+calc_2nd_deriv_4 = function(y,delta_4) (lead(y,1) + lag(y,1)-2*y)/delta_4^2
+
+delta_4 <-sim4[2,"time"] - sim4[1,"time"]
+
+first_deriv_4 <- matrix(NA,nrow= n_step_4, ncol =3)
+first_deriv_4[,1] <- calc_1st_deriv_4(sim4[,"A"], delta_4)
+first_deriv_4[,2] <- calc_1st_deriv_4(sim4[,"F"], delta_4)
+first_deriv_4[,3] <- calc_1st_deriv_4(sim4[,"J"], delta_4)
+
+second_deriv_4 <- matrix(NA,nrow= n_step_4, ncol =3)
+second_deriv_4[,1] <- calc_2nd_deriv_4(sim4[,"A"], delta_4)
+second_deriv_4[,2] <- calc_2nd_deriv_4(sim4[,"F"], delta_4)
+second_deriv_4[,3] <- calc_2nd_deriv_4(sim4[,"J"], delta_4)
+
+fisher_info_4 <- matrix(NA,nrow= n_step_4,ncol=1)
+
+for(i in 1:n_step_4){
+  numerator_4 <-  sum(first_deriv_4[i,]*second_deriv_4[i,])^2
+  denominator_4 <- sqrt(sum(second_deriv_4[i,]^2))^6
+  fisher_info_4[i,] <-  numerator_4/denominator_4 
+}
+
+library(tibbletime)
+rolling_mean_4 <- rollify(mean, window = 100)
+rolling_mean_fisher_4 <- rolling_mean_4(fisher_info_4[,1])
+
+plot(sim4[,"time"],
+     rolling_mean_fisher_4,
+     type="l",
+     ylab="Fisher Information - Rolling Mean",
+     xlab="time", log='y')
+
+troph_tri_jacobian_4 <- function(t,y,parms){
+  
+  jacobian_4 <- matrix(NA, nrow=3, ncol=3)
+  
+  #dP - differentiation variable: A  
+  jacobian_4[1,1] <- with(parms, 
+  #dP - differentiation variable: F 
+  jacobian_4[1,2] <- (0)
+  #dP - differentiation variable: J 
+  jacobian_4[1,3] <- with(parms, 
+  
+  
+  #dF - differentiation variable: A 
+  jacobian_4[2,1] <- with(parms, 
+  #dF - differentiation variable: F 
+  jacobian_4[2,2] <- with(parms, 
+  #dF - differentiation variable: J 
+  jacobian_4[2,3] <- (0)
+  
+  #dJ - differentiation variable: A 
+  jacobian_4[3,1] <- with(parms, 
+  #dJ - differentiation variable: F
+  jacobian_4[3,2] <- with(parms, 
+  #dJ - differentiation variable: J
+  jacobian_4[3,3] <- with(parms, 
+  
+  
+  
+  return(jacobian_4)
+}
+
+#troph_tri_jacobian_4_sim <- troph_tri_jacobian_4(t = sim4[1000,"time"],sim1[1000,c("A","F","J")],parms = model_parameters_4)
+
+#eigen_jacobian_4 <- eigen(troph_tri_jacobian_1_sim)$values
+#eigen_jacobian_4
+#eigen values
+#eigen_jacobian_1$values
+#eigen vectors
+#eigen_jacobian_1$vectors
+
+#create a vector of 600 time steps
+times <- seq(0, 600, by=1)
+n_steps <- length(times)
+
+#create a data frame to hold equilibrium values
+stable_states_1 <- data.frame(P = rep(0,times = n_steps),
+                              F = rep(0,times = n_steps),
+                              J = rep(0,times = n_steps),
+                              eigen  = rep(0,times = n_steps),
+                              time = times)
+
+#set the current state for the loop to the original initial condition
+current_state_1 <- init_cond
+
+for(i in 1:n_steps){
+  current_time <- times[i]
+  #calculate the closest equilibrium point at the current time step
+  root_value_1 <- stode(y= current_state_1,
+                        time =current_time,
+                        func = troph_tri_static_1,
+                        jacfunc = troph_tri_jacobian_1,
+                        parms = model_parameters_1,
+                        positive = TRUE #this ensures that rootSolve will only find positive (or zero) solutions
+  )
+  
+  #change the current state to this value
+  current_state_1 <- root_value_1$y
+  stable_states_1[i, c("P","F","J")] <- current_state_1
+  
+  #Calculate the Jacobian of the system at this equilibrium
+  current_jacobian_1 <- troph_tri_jacobian_1(t = current_time, 
+                                             y = current_state_1,
+                                             parms = model_parameters_1)
+  
+  #calculate eigenvalues of this Jacobian and find the maximum real eigenvalue
+  current_eigs_1 <- eigen(current_jacobian_1)
+  stable_states_1[i,"eigen"] <- max(Re(current_eigs_1$values))
+  
+  #add a small perturbation to the current state to keep rootSolve from finding
+  #only zero values after the regime shift.
+  current_state_1 <- current_state_1 +0.5
+}
+
+#Find the regime shift point as the place where the eigen value of the Jacobian goes to zero (or just above)
+regime_shift_1 <- stable_states_1$time[stable_states_1$eigen==max(stable_states_1$eigen)]
+
+#time step of regime shift
+regime_shift_1
+
+#Plot all three time series, and the eigenvalues and Fisher information indices;
+#mfcol specifies to add plots column-wise (fillin)
+par(mfcol =c(3,2))
+
+#plot the simulation, stable state, and annotate the regime shift for predators
+plot(P~time, data = sim1, type="l")
+points(P~time, data= stable_states_1,type="l",col ="red")
+abline(v = regime_shift_1, col ="blue", lty=2)
+
+#plot the simulation, stable state, and annotate the regime shift for forage fish
+plot(F~time, data= sim1,type="l")
+points(F~time, data= stable_states_1,type="l",col ="red")
+abline(v = regime_shift_1, col ="blue", lty=2)
+
+#plot the simulation, stable state, and annotate the regime shift for juveniles
+plot(J~time, data= sim1,type="l")
+points(J~time, data= stable_states_1,type="l",col ="red")
+abline(v = regime_shift_1, col ="blue", lty=2)
+
+#plotting eigenvalues
+plot(eigen~time, data= stable_states_1,type="l")
+abline(v = regime_shift_1, col ="blue", lty=2)
+
+#plotting Fisher Information
+plot(sim1[,"time"],
+     rolling_mean_fisher_1,
+     type="l",
+     ylab="Fisher Information - Rolling Mean",
+     xlab="time", log='y')
+abline(v = regime_shift_1, col ="blue", lty=2)
 
 
 
