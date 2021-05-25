@@ -7,23 +7,41 @@ library(rootSolve)
 #Set the model parameters for the system
 
 model_parameters_4 = list(
-  q = function(t, rate_4=0.001,init_q_4=0.001){
-    value_4 = t*rate_4 - init_q_4
- return(value_4)
+q = function(t, rate_4=(0.002/1020),init_q_4=0.001){
+value_4 = t*rate_4 - init_q_4
+return(value_4)
 }, #harvest or stocking
-  s = 0.5, #survival rate fo juveniles to maturation
-  m_A = 0.1, #mortality rate of adults
-  f = 2, #fecundity of adult bass
-  c_FA = 0.3, #predation of planktivores by adult bass
-  c_JA = 0.001, #predation of juvenile bass by adult bass
-  c_JF = 0.5, #predation of juvenile bass by planktivorous fish
-  F_o = 100, #abundance of planktivorous fish in non-foraging arena
-  D_F = 0.1, #diffusion of planktivores between refuge and forage arena
-  v = 1, #rate at which J enter a foraging arena and become vulnerable
-  h = 8 #rate at which J hide in a refuge
+s = 0.6, #survival rate fo juveniles to maturation
+m_A = 0.4, #mortality rate of adults
+f = 2, #fecundity of adult bass
+c_FA = 0.3, #predation of planktivores by adult bass
+c_JA = 0.1, #predation of juvenile bass by adult bass
+c_JF = 0.5, #predation of juvenile bass by planktivorous fish
+F_o = 200, #abundance of planktivorous fish in non-foraging arena
+D_F = 0.09, #diffusion of planktivores between refuge and forage arena
+v = 80, #rate at which J enter a foraging arena and become vulnerable
+h = 80 #rate at which J hide in a refuge
 )
 
-init_cond_4 = c(A = 1.5, F = 25, J = 2)
+#adjusted model parameter values from the paper
+#model_parameters_4 = list(
+  #q = function(t, rate_4=0.00000196078,init_q_4=0.001){
+    #value_4 = t*rate_4 - init_q_4
+ #return(value_4)
+#}, #harvest or stocking
+  #s = 0.5, #survival rate fo juveniles to maturation
+  #m_A = 0.1, #mortality rate of adults
+  #f = 2, #fecundity of adult bass
+  #c_FA = 0.3, #predation of planktivores by adult bass
+  #c_JA = 0.001, #predation of juvenile bass by adult bass
+  #c_JF = 0.5, #predation of juvenile bass by planktivorous fish
+  #F_o = 100, #abundance of planktivorous fish in non-foraging arena
+  #D_F = 0.1, #diffusion of planktivores between refuge and forage arena
+  #v = 1, #rate at which J enter a foraging arena and become vulnerable
+  #h = 8 #rate at which J hide in a refuge
+#)
+
+init_cond_4 = c(A = 12, F = 1, J = 8)
 
 #set the function for the system equations
 
