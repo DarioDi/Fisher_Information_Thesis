@@ -41,7 +41,7 @@ h = 80 #rate at which J hide in a refuge
   #h = 8 #rate at which J hide in a refuge
 #)
 
-init_cond_4 = c(A = 12, F = 1, J = 8)
+init_cond_4 = c(A = 12, F = 0.1, J = 8)
 
 #set the function for the system equations
 
@@ -59,7 +59,7 @@ trophic_system_4 = function(t,y, parms){
 
 #set time for plot
 
-Time_plot_4 = seq(0,1020,length.out = 102000)
+Time_plot_4 = seq(0,1020,length.out = 1020)
 
 #plot the simulation
 
