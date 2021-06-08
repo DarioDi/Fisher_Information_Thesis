@@ -6,6 +6,7 @@ library(ggplot2)
 library(rootSolve)
 library(mgcv)
 library(dplyr)
+library(tibbletime)
 
 #set model parameters
 
@@ -73,34 +74,180 @@ sim1 = deSolve::ode(y=init_cond,
                     func = troph_tri_static_1,
                     parms = model_parameters_1)
 
+plot(sim1)
 
 # Adding noise to simulations #### 
 
 set.seed(10)
-obs_error = 0.1
 
-sim1_witherror = sim1
+# Observation Error of 0.05
 
-sim1_witherror[,"P"] = sim1[,"P"]*exp(rnorm(100,0,sd = obs_error))
-sim1_witherror[,"J"] = sim1[,"J"]*exp(rnorm(100,0,sd = obs_error))
-sim1_witherror[,"F"] = sim1[,"F"]*exp(rnorm(100,0,sd = obs_error))
+obs_error_1 = 0.05
 
+sim1_witherror_1 = sim1
 
+sim1_witherror_1[,"P"] = sim1[,"P"]*exp(rnorm(100,0,sd = obs_error_1))
+sim1_witherror_1[,"J"] = sim1[,"J"]*exp(rnorm(100,0,sd = obs_error_1))
+sim1_witherror_1[,"F"] = sim1[,"F"]*exp(rnorm(100,0,sd = obs_error_1))
 
-plot(sim1_witherror)
-
-sim1_P_gam = gam(P~s(time, k= 20),data= as.data.frame(sim1_witherror),
+sim1_P_gam_1 = gam(P~s(time, k= 20),data= as.data.frame(sim1_witherror_1),
                  family = Gamma(link = "log"),method="REML")
 
+sim1_J_gam_1 = gam(J~s(time, k= 20),data= as.data.frame(sim1_witherror_1),
+                 family = Gamma(link = "log"),method="REML")
 
-plot(sim1_P_gam)
+sim1_F_gam_1 = gam(F~s(time, k= 20),data= as.data.frame(sim1_witherror_1),
+                 family = Gamma(link = "log"),method="REML")
 
-sim1_predicted = sim1_witherror
+sim1_predicted_1 = sim1_witherror_1
 
-sim1_predicted[,"P"] = fitted(sim1_P_gam)
+sim1_predicted_1[,"P"] = fitted(sim1_P_gam_1)
+sim1_predicted_1[,"J"] = fitted(sim1_J_gam_1)
+sim1_predicted_1[,"F"] = fitted(sim1_F_gam_1)
+
+plot(sim1_predicted_1)
+
+# Observation Error of 0.10
+
+obs_error_2 = 0.10
+
+sim1_witherror_2 = sim1
+
+sim1_witherror_2[,"P"] = sim1[,"P"]*exp(rnorm(100,0,sd = obs_error_2))
+sim1_witherror_2[,"J"] = sim1[,"J"]*exp(rnorm(100,0,sd = obs_error_2))
+sim1_witherror_2[,"F"] = sim1[,"F"]*exp(rnorm(100,0,sd = obs_error_2))
+
+sim1_P_gam_2 = gam(P~s(time, k= 20),data= as.data.frame(sim1_witherror_2),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_J_gam_2 = gam(J~s(time, k= 20),data= as.data.frame(sim1_witherror_2),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_F_gam_2 = gam(F~s(time, k= 20),data= as.data.frame(sim1_witherror_2),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_predicted_2 = sim1_witherror_2
+
+sim1_predicted_2[,"P"] = fitted(sim1_P_gam_2)
+sim1_predicted_2[,"J"] = fitted(sim1_J_gam_2)
+sim1_predicted_2[,"F"] = fitted(sim1_F_gam_2)
+
+plot(sim1_predicted_2)
+
+# Observation Error of 0.15
+
+obs_error_3 = 0.15
+
+sim1_witherror_3 = sim1
+
+sim1_witherror_3[,"P"] = sim1[,"P"]*exp(rnorm(100,0,sd = obs_error_3))
+sim1_witherror_3[,"J"] = sim1[,"J"]*exp(rnorm(100,0,sd = obs_error_3))
+sim1_witherror_3[,"F"] = sim1[,"F"]*exp(rnorm(100,0,sd = obs_error_3))
+
+sim1_P_gam_3 = gam(P~s(time, k= 20),data= as.data.frame(sim1_witherror_3),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_J_gam_3 = gam(J~s(time, k= 20),data= as.data.frame(sim1_witherror_3),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_F_gam_3 = gam(F~s(time, k= 20),data= as.data.frame(sim1_witherror_3),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_predicted_3 = sim1_witherror_3
+
+sim1_predicted_3[,"P"] = fitted(sim1_P_gam_3)
+sim1_predicted_3[,"J"] = fitted(sim1_J_gam_3)
+sim1_predicted_3[,"F"] = fitted(sim1_F_gam_3)
+
+plot(sim1_predicted_3)
+
+# Observation Error of 0.20
+
+obs_error_4 = 0.20
+
+sim1_witherror_4 = sim1
+
+sim1_witherror_4[,"P"] = sim1[,"P"]*exp(rnorm(100,0,sd = obs_error_4))
+sim1_witherror_4[,"J"] = sim1[,"J"]*exp(rnorm(100,0,sd = obs_error_4))
+sim1_witherror_4[,"F"] = sim1[,"F"]*exp(rnorm(100,0,sd = obs_error_4))
+
+sim1_P_gam_4 = gam(P~s(time, k= 20),data= as.data.frame(sim1_witherror_4),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_J_gam_4 = gam(J~s(time, k= 20),data= as.data.frame(sim1_witherror_4),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_F_gam_4 = gam(F~s(time, k= 20),data= as.data.frame(sim1_witherror_4),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_predicted_4 = sim1_witherror_4
+
+sim1_predicted_4[,"P"] = fitted(sim1_P_gam_4)
+sim1_predicted_4[,"J"] = fitted(sim1_J_gam_4)
+sim1_predicted_4[,"F"] = fitted(sim1_F_gam_4)
+
+plot(sim1_predicted_4)
+
+# Observation Error of 0.25
+
+obs_error_5 = 0.25
+
+sim1_witherror_5 = sim1
+
+sim1_witherror_5[,"P"] = sim1[,"P"]*exp(rnorm(100,0,sd = obs_error_5))
+sim1_witherror_5[,"J"] = sim1[,"J"]*exp(rnorm(100,0,sd = obs_error_5))
+sim1_witherror_5[,"F"] = sim1[,"F"]*exp(rnorm(100,0,sd = obs_error_5))
+
+sim1_P_gam_5 = gam(P~s(time, k= 20),data= as.data.frame(sim1_witherror_5),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_J_gam_5 = gam(J~s(time, k= 20),data= as.data.frame(sim1_witherror_5),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_F_gam_5 = gam(F~s(time, k= 20),data= as.data.frame(sim1_witherror_5),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_predicted_5 = sim1_witherror_5
+
+sim1_predicted_5[,"P"] = fitted(sim1_P_gam_5)
+sim1_predicted_5[,"J"] = fitted(sim1_J_gam_5)
+sim1_predicted_5[,"F"] = fitted(sim1_F_gam_5)
+
+plot(sim1_predicted_5)
+
+# Observation Error of 0.30
+
+obs_error_6 = 0.30
+
+sim1_witherror_6 = sim1
+
+sim1_witherror_6[,"P"] = sim1[,"P"]*exp(rnorm(100,0,sd = obs_error_6))
+sim1_witherror_6[,"J"] = sim1[,"J"]*exp(rnorm(100,0,sd = obs_error_6))
+sim1_witherror_6[,"F"] = sim1[,"F"]*exp(rnorm(100,0,sd = obs_error_6))
+
+sim1_P_gam_6 = gam(P~s(time, k= 20),data= as.data.frame(sim1_witherror_6),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_J_gam_6 = gam(J~s(time, k= 20),data= as.data.frame(sim1_witherror_6),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_F_gam_6 = gam(F~s(time, k= 20),data= as.data.frame(sim1_witherror_6),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_predicted_6 = sim1_witherror_6
+
+sim1_predicted_6[,"P"] = fitted(sim1_P_gam_6)
+sim1_predicted_6[,"J"] = fitted(sim1_J_gam_6)
+sim1_predicted_6[,"F"] = fitted(sim1_F_gam_6)
+
+plot(sim1_predicted_6)
 
 
-plot(sim1_predicted)
+
+
+
+
+
 
 
 time_series_e_1 <- sapply(Time_plot_1, model_parameters_1$e)
@@ -113,17 +260,17 @@ n_step_1 = length(Time_plot_1)
 calc_1st_deriv_1 = function(y,delta_1) (lead(y,1) - lag(y,1))/(2*delta_1)
 calc_2nd_deriv_1 = function(y,delta_1) (lead(y,1) + lag(y,1)-2*y)/delta_1^2
 
-delta_1 <-sim1[2,"time"] - sim1[1,"time"]
+delta_1 <-sim1_predicted_1[2,"time"] - sim1_predicted_1[1,"time"]
 
 first_deriv_1 <- matrix(NA,nrow= n_step_1, ncol =3)
-first_deriv_1[,1] <- calc_1st_deriv_1(sim1[,"P"], delta_1)
-first_deriv_1[,2] <- calc_1st_deriv_1(sim1[,"F"], delta_1)
-first_deriv_1[,3] <- calc_1st_deriv_1(sim1[,"J"], delta_1)
+first_deriv_1[,1] <- calc_1st_deriv_1(sim1_predicted_1[,"P"], delta_1)
+first_deriv_1[,2] <- calc_1st_deriv_1(sim1_predicted_1[,"F"], delta_1)
+first_deriv_1[,3] <- calc_1st_deriv_1(sim1_predicted_1[,"J"], delta_1)
 
 second_deriv_1 <- matrix(NA,nrow= n_step_1, ncol =3)
-second_deriv_1[,1] <- calc_2nd_deriv_1(sim1[,"P"], delta_1)
-second_deriv_1[,2] <- calc_2nd_deriv_1(sim1[,"F"], delta_1)
-second_deriv_1[,3] <- calc_2nd_deriv_1(sim1[,"J"], delta_1)
+second_deriv_1[,1] <- calc_2nd_deriv_1(sim1_predicted_1[,"P"], delta_1)
+second_deriv_1[,2] <- calc_2nd_deriv_1(sim1_predicted_1[,"F"], delta_1)
+second_deriv_1[,3] <- calc_2nd_deriv_1(sim1_predicted_1[,"J"], delta_1)
 
 fisher_info_1 <- matrix(NA,nrow= n_step_1,ncol=1)
 
@@ -133,15 +280,22 @@ for(i in 1:n_step_1){
   fisher_info_1[i,] <-  numerator_1/denominator_1 
 }
 
-library(tibbletime)
-rolling_mean_1 <- rollify(mean, window = 100)
-rolling_mean_fisher_1 <- rolling_mean_1(fisher_info_1[,1])
 
-plot(sim1[,"time"],
-     rolling_mean_fisher_1,
+#rolling_mean_1 <- rollify(mean, window = 100)
+#rolling_mean_fisher_1 <- rolling_mean_1(fisher_info_1[,1])
+
+plot(sim1_predicted_1[,"time"],
+     fisher_info_1,
      type="l",
      ylab="Fisher Information - Rolling Mean",
      xlab="time", log='y')
+
+#plot(sim1_predicted_1[,"time"],
+#     rolling_mean_fisher_1,
+#     type="l",
+#     ylab="Fisher Information - Rolling Mean",
+#     xlab="time", log='y')
+
 
 troph_tri_jacobian_1 <- function(t,y,parms){
 
@@ -237,17 +391,17 @@ regime_shift_1
 par(mfcol =c(3,2))
 
 #plot the simulation, stable state, and annotate the regime shift for predators
-plot(P~time, data = sim1, type="l")
+plot(P~time, data = sim1_predicted_1, type="l")
 points(P~time, data= stable_states_1,type="l",col ="red")
 abline(v = regime_shift_1, col ="blue", lty=2)
 
 #plot the simulation, stable state, and annotate the regime shift for forage fish
-plot(F~time, data= sim1,type="l")
+plot(F~time, data= sim1_predicted_1,type="l")
 points(F~time, data= stable_states_1,type="l",col ="red")
 abline(v = regime_shift_1, col ="blue", lty=2)
 
 #plot the simulation, stable state, and annotate the regime shift for juveniles
-plot(J~time, data= sim1,type="l")
+plot(J~time, data= sim1_predicted_1,type="l")
 points(J~time, data= stable_states_1,type="l",col ="red")
 abline(v = regime_shift_1, col ="blue", lty=2)
 
@@ -257,7 +411,7 @@ abline(v = regime_shift_1, col ="blue", lty=2)
 
 #plotting Fisher Information
 plot(sim1[,"time"],
-     rolling_mean_fisher_1,
+     fisher_info_1,
      type="l",
      ylab="Fisher Information - Rolling Mean",
      xlab="time", log='y')
