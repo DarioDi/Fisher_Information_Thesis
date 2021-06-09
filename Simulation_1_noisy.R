@@ -1,4 +1,4 @@
-#Simulation 1 - Slowly increasing exploitation rate
+#Simulation 1 - Slowly increasing exploitation rate #####
 
 
 library(deSolve)
@@ -7,6 +7,8 @@ library(rootSolve)
 library(mgcv)
 library(dplyr)
 library(tibbletime)
+
+#Model Parameter and Simulation Set Up ####
 
 #set model parameters
 
@@ -78,7 +80,53 @@ plot(sim1)
 
 # Adding noise to simulations #### 
 
+#creating a loop to plot error, FI min and regime shift point
+
 set.seed(10)
+
+sim1_witherror = sim1
+
+sim1_witherror[,"P"] = sim1[,"P"]*exp(rnorm(100,0,sd = obs_error))
+sim1_witherror[,"J"] = sim1[,"J"]*exp(rnorm(100,0,sd = obs_error))
+sim1_witherror[,"F"] = sim1[,"F"]*exp(rnorm(100,0,sd = obs_error))
+
+sim1_P_gam = gam(P~s(time, k= 20, bs= "ad"),data= as.data.frame(sim1_witherror),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_J_gam = gam(J~s(time, k= 20, bs= "ad"),data= as.data.frame(sim1_witherror),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_F_gam = gam(F~s(time, k= 20, bs= "ad"),data= as.data.frame(sim1_witherror),
+                   family = Gamma(link = "log"),method="REML")
+
+sim1_predicted = sim1_witherror
+
+sim1_predicted[,"P"] = fitted(sim1_P_gam)
+sim1_predicted[,"J"] = fitted(sim1_J_gam)
+sim1_predicted[,"F"] = fitted(sim1_F_gam)
+
+sim1_parameter = expand.grid(obs_error = seq(0, 0.3, by= 0.02),
+                            rate_of_change = seq(0.05, 0.1, by= 0.05),
+                            replicate = 1:100)
+
+n_sim1 = nrow(sim1_parameter)
+
+for(i in 1:n_sim1){
+  sim1_current = sim1(sim1_parameter[i,])
+  sim1_fit_gam = sim1_predicted
+  sim1_fisherinfo_current = rolling_mean_fisher_1 #adjust function
+  sim1_fisherinfo_log_current = #create function for FI with log
+  sim1_fisherinfo_min = 
+  sim1_fisherinfo_log_min =
+  sim1_regimeshift_time = regime_shift_1 #need to fix function
+  sim1_parameter[i, "sim1_fisherinfo_min"] = sim1_fisherinfo_min
+  sim1_parameter[i, "sim1_fisherinfo_log_min"] = sim1_fisherinfo_log_min
+  sim1_parameter[i, "sim1_regimeshift_time"] = sim1_regimeshift_time
+
+}
+
+
+
 
 # Observation Error of 0.05
 
@@ -90,13 +138,13 @@ sim1_witherror_1[,"P"] = sim1[,"P"]*exp(rnorm(100,0,sd = obs_error_1))
 sim1_witherror_1[,"J"] = sim1[,"J"]*exp(rnorm(100,0,sd = obs_error_1))
 sim1_witherror_1[,"F"] = sim1[,"F"]*exp(rnorm(100,0,sd = obs_error_1))
 
-sim1_P_gam_1 = gam(P~s(time, k= 20),data= as.data.frame(sim1_witherror_1),
+sim1_P_gam_1 = gam(P~s(time, k= 20, bs= "ad"),data= as.data.frame(sim1_witherror_1),
                  family = Gamma(link = "log"),method="REML")
 
-sim1_J_gam_1 = gam(J~s(time, k= 20),data= as.data.frame(sim1_witherror_1),
+sim1_J_gam_1 = gam(J~s(time, k= 20, bs= "ad"),data= as.data.frame(sim1_witherror_1),
                  family = Gamma(link = "log"),method="REML")
 
-sim1_F_gam_1 = gam(F~s(time, k= 20),data= as.data.frame(sim1_witherror_1),
+sim1_F_gam_1 = gam(F~s(time, k= 20, bs= "ad"),data= as.data.frame(sim1_witherror_1),
                  family = Gamma(link = "log"),method="REML")
 
 sim1_predicted_1 = sim1_witherror_1
@@ -248,12 +296,12 @@ plot(sim1_predicted_6)
 
 
 
-
+#plotting changing model paramter over time which causes the regime shift to occur
 
 time_series_e_1 <- sapply(Time_plot_1, model_parameters_1$e)
 plot(time_series_e_1, type="l")
 
-
+#Calculating Fisher Information ####
 
 n_step_1 = length(Time_plot_1)
 
@@ -281,21 +329,22 @@ for(i in 1:n_step_1){
 }
 
 
-#rolling_mean_1 <- rollify(mean, window = 100)
-#rolling_mean_fisher_1 <- rolling_mean_1(fisher_info_1[,1])
-
-plot(sim1_predicted_1[,"time"],
-     fisher_info_1,
-     type="l",
-     ylab="Fisher Information - Rolling Mean",
-     xlab="time", log='y')
+rolling_mean_1 <- rollify(mean, window = 20)
+rolling_mean_fisher_1 <- rolling_mean_1(fisher_info_1[,1])
 
 #plot(sim1_predicted_1[,"time"],
-#     rolling_mean_fisher_1,
+#     fisher_info_1,
 #     type="l",
 #     ylab="Fisher Information - Rolling Mean",
 #     xlab="time", log='y')
 
+plot(sim1_predicted_1[,"time"],
+     rolling_mean_fisher_1,
+     type="l",
+     ylab="Fisher Information - Rolling Mean",
+     xlab="time", log='y')
+
+#Setting up the Jacobian Matrix for Eigenvalues and Eigenvectors ####
 
 troph_tri_jacobian_1 <- function(t,y,parms){
 
@@ -323,19 +372,12 @@ troph_tri_jacobian_1 <- function(t,y,parms){
   #dJ - differentiation variable: J (-1/T_mat)-(a_PJ*P)-(m)-(a_FJ*F)
   jacobian_1[3,3] <- with(parms, ((-1/T_mat)-(a_PJ*y[1])-(m)-(a_FJ*y[2])))
   
-  
-  
   return(jacobian_1)
 }
 
 troph_tri_jacobian_1_sim <- troph_tri_jacobian_1(t = sim1[1000,"time"],sim1[1000,c("P","F","J")],parms = model_parameters_1)
 
-eigen_jacobian_1 <- eigen(troph_tri_jacobian_1_sim)$values
-eigen_jacobian_1
-#eigen values
-#eigen_jacobian_1$values
-#eigen vectors
-#eigen_jacobian_1$vectors
+#Plotting the equilibrium points and regime shiftover the population density ####
 
 #create a vector of 600 time steps
 times <- seq(0, 600, by=1)
