@@ -69,7 +69,8 @@ extract_gam_predictions <- function(parameters, sim, time_seq = time_series){
   return(predictions)
 }
 
-calc_fisher_current <- function(parameters, time_seq = time_series, predictions,
+calc_fisher_current <- function(parameters, predictions, 
+                                time_seq = time_series, 
                                 first_deriv_func = calc_1st_deriv, 
                                 second_deriv_func = calc_2nd_deriv){
   
@@ -139,6 +140,7 @@ rate_from_time <- function(rate_1, t,
 calc_1st_deriv = function(y,delta){
   (lead(y,1) - lag(y,1))/(2*delta)
 }
+
 calc_2nd_deriv = function(y,delta){
   (lead(y,1) + lag(y,1)-2*y)/delta^2
 }
