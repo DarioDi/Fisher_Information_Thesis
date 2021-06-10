@@ -28,6 +28,8 @@ for(i in seq_len(length.out = n_sim1)){
   sim_fisher_current <- calc_fisher_current(parameters = sim1_parameter[i,],
                                             predictions = sim_predictions)
   
+  print(head(sim_fisher_current))
+  
   # sim1_fisherinfo_current = rolling_mean_fisher_1 #adjust function
   # sim1_fisherinfo_log_current = #create function for FI with log
   #   sim1_fisherinfo_min = 
