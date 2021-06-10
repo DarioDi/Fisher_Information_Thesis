@@ -55,10 +55,10 @@ extract_gam_predictions <- function(parameters, sim, time_seq = time_series){
               family = Gamma(link = "log"),method="REML")
   
   gam_J = gam(J~s(time_seq, k= 20, bs= "ad"),data= as.data.frame(sim),
-                     family = Gamma(link = "log"),method="REML")
+              family = Gamma(link = "log"),method="REML")
   
   gam_F = gam(F~s(time_seq, k= 20, bs= "ad"),data= as.data.frame(sim),
-                     family = Gamma(link = "log"),method="REML")
+              family = Gamma(link = "log"),method="REML")
   
   # 3. Extract
   
@@ -69,62 +69,44 @@ extract_gam_predictions <- function(parameters, sim, time_seq = time_series){
   return(predictions)
 }
 
-
-
 calc_fisher_current <- function(parameters, time_seq = time_series, predictions,
-                               calc_1st_deriv = calc_1st_deriv, calc_2nd_deriv = calc_2nd_deriv){
-
+                                first_deriv_func = calc_1st_deriv, 
+                                second_deriv_func = calc_2nd_deriv){
+  
+  n_steps <- length(time_seq)
+  
   #1. Fill first and second derivative matrices
-
-  delta <-predictions[2,"time"] - predictions[1,"time"]
-
-
-  first_deriv <- matrix(NA,nrow= time_seq, ncol =3)
-  first_deriv[,1] <- calc_1st_deriv(predictions[,"P"], delta)
-  first_deriv[,2] <- calc_1st_deriv(predictions[,"F"], delta)
-  first_deriv[,3] <- calc_1st_deriv(predictions[,"J"], delta)
-
-  second_deriv <- matrix(NA,nrow= time_seq, ncol =3)
-  second_deriv[,1] <- calc_2nd_deriv(predictions[,"P"], delta)
-  second_deriv[,2] <- calc_2nd_deriv(predictions[,"F"], delta)
-  second_deriv[,3] <- calc_2nd_deriv(predictions[,"J"], delta)
-
-  fisher_info <- matrix(NA,nrow= time_seq,ncol=1)
-
+  
+  delta <-time_seq[2] - time_seq[1]
+  
+  first_deriv <- matrix(NA, nrow = n_steps, ncol =3)
+  first_deriv[,1] <- first_deriv_func(predictions[,"P"], delta)
+  first_deriv[,2] <- first_deriv_func(predictions[,"F"], delta)
+  first_deriv[,3] <- first_deriv_func(predictions[,"J"], delta)
+  
+  second_deriv <- matrix(NA, nrow = n_steps, ncol =3)
+  second_deriv[,1] <- second_deriv_func(predictions[,"P"], delta)
+  second_deriv[,2] <- second_deriv_func(predictions[,"F"], delta)
+  second_deriv[,3] <- second_deriv_func(predictions[,"J"], delta)
+  
+  fisher_info <- matrix(NA, nrow = n_steps, ncol=1)
+  
   #2. set up calculation of fisher information
-
-  for(i in 1:n_step_1){
+  
+  for(i in seq_len(n_steps)){
     numerator <-  sum(first_deriv[i,]*second_deriv[i,])^2
     denominator <- sqrt(sum(second_deriv[i,]^2))^6
     fisher_info[i,] <-  numerator/denominator
   }
-
+  
   #3. use rolling mean on fisher info and extract
-
+  
   rolling_mean <- rollify(mean, window = 10)
   rolling_mean_fisher <- rolling_mean(fisher_info[,1])
-
+  
   return(rolling_mean_fisher)
-
+  
 }
-
-
-  
-  
-  
- 
-  
-  
-
-
-
-
-
-
-
-
-
-
 
 # Secondary ---------------------------------------------------------------
 
