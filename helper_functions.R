@@ -1,6 +1,8 @@
 
 # Primary workflow functions ----------------------------------------------
 
+#Running the simulation ####
+
 params_unchanging <- 
   list(T_mat = 5,    #length of time it takes a juvenile predator to mature to an adult
        m = 0.025,    #mortality rate of adult and juvenile fish
@@ -40,7 +42,12 @@ run_simulation <- function(parameters,   # single row dataframe with the varying
   return(sim)
 }
 
+#Fitting population densities of the trophic triangle using GAM ####
+
 extract_gam_predictions <- function(parameters, sim, time_seq = time_series){
+  
+  set.seed(10)
+
   
   # 1. apply the observation error
   err <- parameters$obs_error
@@ -68,6 +75,8 @@ extract_gam_predictions <- function(parameters, sim, time_seq = time_series){
   
   return(predictions)
 }
+
+#Calculating Fisher Information ####
 
 calc_fisher_current <- function(parameters, predictions, 
                                 time_seq = time_series, 
@@ -109,7 +118,78 @@ calc_fisher_current <- function(parameters, predictions,
   
 }
 
+
+#Determining when the Regime Shift Occurs ####
+
+calc_regime_shift <- function(parameters, other_params = params_unchanging,
+                              init_cond = c(P = 77, F = 0.067, J = 9.37)){
+
+  rate_1 <- parameters$rate_of_change
+  model_parameters_1 <- append(other_params, 
+                               list(rate_from_time = rate_from_time, 
+                                    rate_1 = rate_1))
+
+
+#create a vector of 600 time steps
+times <- seq(1, 100, by=1)
+n_steps <- length(times)
+
+#create a data frame to hold equilibrium values
+stable_states_1 <- data.frame(P = rep(1,times = n_steps),
+                              F = rep(1,times = n_steps),
+                              J = rep(1,times = n_steps),
+                              eigen  = rep(1,times = n_steps),
+                              time = times)
+
+#set the current state for the loop to the original initial condition
+current_state_1 <- init_cond
+
+for(i in 1:n_steps){
+  current_time <- times[i]
+  #calculate the closest equilibrium point at the current time step
+  root_value_1 <- stode(y= current_state_1,
+                        time =current_time,
+                        func = troph_tri_static_1,
+                        jacfunc = troph_tri_jacobian_1,
+                        parms = model_parameters_1,
+                        positive = TRUE #this ensures that rootSolve will only find positive (or zero) solutions
+  )
+  
+  #change the current state to this value
+  current_state_1 <- root_value_1$y
+  stable_states_1[i, c("P","F","J")] <- current_state_1
+  
+  #Calculate the Jacobian of the system at this equilibrium
+  current_jacobian_1 <- troph_tri_jacobian_1(t = current_time, 
+                                             y = current_state_1,
+                                             parms = model_parameters_1)
+  
+  #calculate eigenvalues of this Jacobian and find the maximum real eigenvalue
+  current_eigs_1 <- eigen(current_jacobian_1)
+  stable_states_1[i,"eigen"] <- max(Re(current_eigs_1$values))
+  
+  #add a small perturbation to the current state to keep rootSolve from finding
+  #only zero values after the regime shift.
+  current_state_1 <- current_state_1 +0.5
+}
+
+#Find the regime shift point as the place where the eigen value of the Jacobian goes to zero (or just above)
+regime_shift <- stable_states_1$time[stable_states_1$eigen==max(stable_states_1$eigen)]
+
+return(regime_shift)
+
+}
+
+
+
+
+
+
+
+
 # Secondary ---------------------------------------------------------------
+
+#Running the simulation ####
 
 troph_tri_static_1 = function(t,y,parms){
   
@@ -137,6 +217,8 @@ rate_from_time <- function(rate_1, t,
   value_1
 }
 
+#Calculating Fisher Information ####
+
 calc_1st_deriv = function(y,delta){
   (lead(y,1) - lag(y,1))/(2*delta)
 }
@@ -145,4 +227,34 @@ calc_2nd_deriv = function(y,delta){
   (lead(y,1) + lag(y,1)-2*y)/delta^2
 }
 
+#Calculating Regime Shift point ####
+
+troph_tri_jacobian_1 <- function(t,y,parms){
+  
+  jacobian_1 <- matrix(NA, nrow=3, ncol=3)
+  
+  #dP - differentiation variable: P (-e(t)-m) 
+  jacobian_1[1,1] <- with(parms, (-rate_from_time(t, rate_1)-m))
+  #dP - differentiation variable: F 0
+  jacobian_1[1,2] <- (0)
+  #dP - differentiation variable: J (1/T_mat)
+  jacobian_1[1,3] <- with(parms, (1/T_mat))
+  
+  
+  #dF - differentiation variable: P (-a_PF*F)
+  jacobian_1[2,1] <- with(parms, (-a_PF*y[2]))
+  #dF - differentiation variable: F (-2*b*F)+(r)-(a_PF*P)
+  jacobian_1[2,2] <- with(parms, ((-2*b*y[2])+(r)-(a_PF*y[1])))
+  #dF - differentiation variable: J 0
+  jacobian_1[2,3] <- (0)
+  
+  #dJ - differentiation variable: P (F-(a_PJ*J)
+  jacobian_1[3,1] <- with(parms, (f-(a_PJ*y[3])))
+  #dJ - differentiation variable: F (P-(a_FJ*J)
+  jacobian_1[3,2] <- with(parms, -a_FJ*y[3])
+  #dJ - differentiation variable: J (-1/T_mat)-(a_PJ*P)-(m)-(a_FJ*F)
+  jacobian_1[3,3] <- with(parms, ((-1/T_mat)-(a_PJ*y[1])-(m)-(a_FJ*y[2])))
+  
+  return(jacobian_1)
+}
 
