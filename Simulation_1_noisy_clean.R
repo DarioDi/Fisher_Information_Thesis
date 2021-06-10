@@ -23,7 +23,10 @@ for(i in seq_len(length.out = n_sim1)){
   sim_predictions <- extract_gam_predictions(parameters = sim1_parameter[i,], 
                                              sim = sim_current)
   
-  print(head(sim_predictions))
+  print(head(sim_predictions))  
+  
+  sim_fisher_current <- calc_fisher_current(parameters = sim1_parameter[i,],
+                                            predictions = sim_predictions)
   
   # sim1_fisherinfo_current = rolling_mean_fisher_1 #adjust function
   # sim1_fisherinfo_log_current = #create function for FI with log
@@ -34,4 +37,9 @@ for(i in seq_len(length.out = n_sim1)){
   # sim1_parameter[i, "sim1_fisherinfo_log_min"] = sim1_fisherinfo_log_min
   # sim1_parameter[i, "sim1_regimeshift_time"] = sim1_regimeshift_time
 }
+
+
+
+
+
 

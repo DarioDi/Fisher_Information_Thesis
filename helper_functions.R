@@ -69,6 +69,63 @@ extract_gam_predictions <- function(parameters, sim, time_seq = time_series){
   return(predictions)
 }
 
+
+
+calc_fisher_current <- function(parameters, time_seq = time_series, predictions,
+                               calc_1st_deriv = calc_1st_deriv, calc_2nd_deriv = calc_2nd_deriv){
+
+  #1. Fill first and second derivative matrices
+
+  delta <-predictions[2,"time"] - predictions[1,"time"]
+
+
+  first_deriv <- matrix(NA,nrow= time_seq, ncol =3)
+  first_deriv[,1] <- calc_1st_deriv(predictions[,"P"], delta)
+  first_deriv[,2] <- calc_1st_deriv(predictions[,"F"], delta)
+  first_deriv[,3] <- calc_1st_deriv(predictions[,"J"], delta)
+
+  second_deriv <- matrix(NA,nrow= time_seq, ncol =3)
+  second_deriv[,1] <- calc_2nd_deriv(predictions[,"P"], delta)
+  second_deriv[,2] <- calc_2nd_deriv(predictions[,"F"], delta)
+  second_deriv[,3] <- calc_2nd_deriv(predictions[,"J"], delta)
+
+  fisher_info <- matrix(NA,nrow= time_seq,ncol=1)
+
+  #2. set up calculation of fisher information
+
+  for(i in 1:n_step_1){
+    numerator <-  sum(first_deriv[i,]*second_deriv[i,])^2
+    denominator <- sqrt(sum(second_deriv[i,]^2))^6
+    fisher_info[i,] <-  numerator/denominator
+  }
+
+  #3. use rolling mean on fisher info and extract
+
+  rolling_mean <- rollify(mean, window = 10)
+  rolling_mean_fisher <- rolling_mean(fisher_info[,1])
+
+  return(rolling_mean_fisher)
+
+}
+
+
+  
+  
+  
+ 
+  
+  
+
+
+
+
+
+
+
+
+
+
+
 # Secondary ---------------------------------------------------------------
 
 troph_tri_static_1 = function(t,y,parms){
@@ -96,3 +153,12 @@ rate_from_time <- function(rate_1, t,
   value_1[value_1 > max_value_1] <- max_value_1
   value_1
 }
+
+calc_1st_deriv = function(y,delta){
+  (lead(y,1) - lag(y,1))/(2*delta)
+}
+calc_2nd_deriv = function(y,delta){
+  (lead(y,1) + lag(y,1)-2*y)/delta^2
+}
+
+
