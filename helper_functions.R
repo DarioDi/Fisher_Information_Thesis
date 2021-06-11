@@ -121,6 +121,9 @@ calc_fisher_current <- function(parameters, predictions,
 
 #Determining when the Regime Shift Occurs ####
 
+
+
+
 calc_regime_shift <- function(parameters, other_params = params_unchanging,
                               init_cond = c(P = 77, F = 0.067, J = 9.37)){
 
@@ -135,16 +138,16 @@ times <- seq(1, 100, by=1)
 n_steps <- length(times)
 
 #create a data frame to hold equilibrium values
-stable_states_1 <- data.frame(P = rep(1,times = n_steps),
-                              F = rep(1,times = n_steps),
-                              J = rep(1,times = n_steps),
-                              eigen  = rep(1,times = n_steps),
+stable_states_1 <- data.frame(P = rep(0,times = n_steps),
+                              F = rep(0,times = n_steps),
+                              J = rep(0,times = n_steps),
+                              eigen  = rep(0,times = n_steps),
                               time = times)
 
 #set the current state for the loop to the original initial condition
 current_state_1 <- init_cond
 
-for(i in 1:n_steps){
+for(i in seq_len(n_steps)){
   current_time <- times[i]
   #calculate the closest equilibrium point at the current time step
   root_value_1 <- stode(y= current_state_1,
