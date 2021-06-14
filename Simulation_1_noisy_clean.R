@@ -50,5 +50,10 @@ for(i in seq_len(length.out = n_sim1)){
 View(sim1_parameter)
 
 
-
+ggplot(sim1_parameter, aes(y = obs_error, x = rate_of_change, fill = sim_fisher_min)) +
+  geom_tile()
+ggplot(sim1_parameter, aes(y = obs_error, x = rate_of_change, fill = sim_log_fisher_min)) +
+  geom_tile()
+ggplot(sim1_parameter, aes(y = obs_error, x = rate_of_change, fill = regime_shift_time)) +
+  geom_tile()
 
