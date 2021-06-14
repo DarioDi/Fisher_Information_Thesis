@@ -18,7 +18,7 @@ params_unchanging <-
        d = 0.5       #Stocking rate for forage fish
   ) 
 
-time_series <- seq(0,10000,length.out = 1000)
+time_series <- seq(1,100,length.out = 100)
 init_cond_default <- c(P = 77, F = 0.067, J = 9.37)
 
 
@@ -126,7 +126,7 @@ calc_fisher_current <- function(parameters, predictions,
 
 
 calc_regime_shift <- function(parameters, other_params = params_unchanging,
-                              init_cond = init_cond_default){
+                              init_cond = init_cond_default, times  = time_series){
   
   rate_1 <- parameters$rate_of_change
   model_parameters_1 <- append(other_params, 
@@ -135,7 +135,6 @@ calc_regime_shift <- function(parameters, other_params = params_unchanging,
   
   
   #create a vector of 600 time steps
-  times <- seq(1, 100, by=1)
   n_steps <- length(times)
   
   #create a data frame to hold equilibrium values
@@ -180,15 +179,9 @@ calc_regime_shift <- function(parameters, other_params = params_unchanging,
   #Find the regime shift point as the place where the eigen value of the Jacobian goes to zero (or just above)
   regime_shift <- stable_states_1$time[stable_states_1$eigen==max(stable_states_1$eigen)]
   
-  return(regime_shift)
+  return(min(regime_shift)) # TODO verify if minimum is appropriate here
   
 }
-
-
-
-
-
-
 
 
 # Secondary ---------------------------------------------------------------
