@@ -47,7 +47,7 @@ run_simulation <- function(parameters,   # single row dataframe with the varying
 extract_gam_predictions <- function(parameters, sim, time_seq = time_series){
   
   set.seed(10)
-
+  
   
   # 1. apply the observation error
   err <- parameters$obs_error
@@ -126,61 +126,61 @@ calc_fisher_current <- function(parameters, predictions,
 
 calc_regime_shift <- function(parameters, other_params = params_unchanging,
                               init_cond = c(P = 77, F = 0.067, J = 9.37)){
-
+  
   rate_1 <- parameters$rate_of_change
   model_parameters_1 <- append(other_params, 
                                list(rate_from_time = rate_from_time, 
                                     rate_1 = rate_1))
-
-
-#create a vector of 600 time steps
-times <- seq(1, 100, by=1)
-n_steps <- length(times)
-
-#create a data frame to hold equilibrium values
-stable_states_1 <- data.frame(P = rep(0,times = n_steps),
-                              F = rep(0,times = n_steps),
-                              J = rep(0,times = n_steps),
-                              eigen  = rep(0,times = n_steps),
-                              time = times)
-
-#set the current state for the loop to the original initial condition
-current_state_1 <- init_cond
-
-for(i in seq_len(n_steps)){
-  current_time <- times[i]
-  #calculate the closest equilibrium point at the current time step
-  root_value_1 <- stode(y= current_state_1,
-                        time =current_time,
-                        func = troph_tri_static_1,
-                        jacfunc = troph_tri_jacobian_1,
-                        parms = model_parameters_1,
-                        positive = TRUE #this ensures that rootSolve will only find positive (or zero) solutions
-  )
   
-  #change the current state to this value
-  current_state_1 <- root_value_1$y
-  stable_states_1[i, c("P","F","J")] <- current_state_1
   
-  #Calculate the Jacobian of the system at this equilibrium
-  current_jacobian_1 <- troph_tri_jacobian_1(t = current_time, 
-                                             y = current_state_1,
-                                             parms = model_parameters_1)
+  #create a vector of 600 time steps
+  times <- seq(1, 100, by=1)
+  n_steps <- length(times)
   
-  #calculate eigenvalues of this Jacobian and find the maximum real eigenvalue
-  current_eigs_1 <- eigen(current_jacobian_1)
-  stable_states_1[i,"eigen"] <- max(Re(current_eigs_1$values))
+  #create a data frame to hold equilibrium values
+  stable_states_1 <- data.frame(P = rep(0,times = n_steps),
+                                F = rep(0,times = n_steps),
+                                J = rep(0,times = n_steps),
+                                eigen  = rep(0,times = n_steps),
+                                time = times)
   
-  #add a small perturbation to the current state to keep rootSolve from finding
-  #only zero values after the regime shift.
-  current_state_1 <- current_state_1 +0.5
-}
-
-#Find the regime shift point as the place where the eigen value of the Jacobian goes to zero (or just above)
-regime_shift <- stable_states_1$time[stable_states_1$eigen==max(stable_states_1$eigen)]
-
-return(regime_shift)
-
+  #set the current state for the loop to the original initial condition
+  current_state_1 <- init_cond
+  
+  for(i in seq_len(n_steps)){
+    current_time <- times[i]
+    #calculate the closest equilibrium point at the current time step
+    root_value_1 <- stode(y= current_state_1,
+                          time =current_time,
+                          func = troph_tri_static_1,
+                          jacfunc = troph_tri_jacobian_1,
+                          parms = model_parameters_1,
+                          positive = TRUE #this ensures that rootSolve will only find positive (or zero) solutions
+    )
+    
+    #change the current state to this value
+    current_state_1 <- root_value_1$y
+    stable_states_1[i, c("P","F","J")] <- current_state_1
+    
+    #Calculate the Jacobian of the system at this equilibrium
+    current_jacobian_1 <- troph_tri_jacobian_1(t = current_time, 
+                                               y = current_state_1,
+                                               parms = model_parameters_1)
+    
+    #calculate eigenvalues of this Jacobian and find the maximum real eigenvalue
+    current_eigs_1 <- eigen(current_jacobian_1)
+    stable_states_1[i,"eigen"] <- max(Re(current_eigs_1$values))
+    
+    #add a small perturbation to the current state to keep rootSolve from finding
+    #only zero values after the regime shift.
+    current_state_1 <- current_state_1 +0.5
+  }
+  
+  #Find the regime shift point as the place where the eigen value of the Jacobian goes to zero (or just above)
+  regime_shift <- stable_states_1$time[stable_states_1$eigen==max(stable_states_1$eigen)]
+  
+  return(regime_shift)
+  
 }
 
 
