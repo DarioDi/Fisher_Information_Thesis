@@ -18,7 +18,7 @@ params_unchanging <-
        d = 0.5       #Stocking rate for forage fish
   ) 
 
-time_series <- seq(1,100,length.out = 100)
+time_series <- seq(0,600,length.out = 100)
 init_cond_default <- c(P = 77, F = 0.067, J = 9.37)
 
 
@@ -207,7 +207,7 @@ troph_tri_static_1 = function(t,y,parms){
 }
 
 rate_from_time <- function(rate_1, t, 
-                           min_value_1=0, max_value_1=1, lag_time_1=0){
+                           min_value_1=0, max_value_1=1, lag_time_1=0.15){
   value_1=rate_1*t-lag_time_1
   value_1[value_1 < min_value_1] <- min_value_1
   value_1[value_1 > max_value_1] <- max_value_1
