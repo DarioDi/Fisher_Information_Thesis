@@ -19,6 +19,7 @@ params_unchanging <-
   ) 
 
 time_series <- seq(1,600,length.out = 600)
+
 init_cond_default <- c(P = 77, F = 0.067, J = 9.37)
 
 
