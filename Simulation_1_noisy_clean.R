@@ -8,7 +8,7 @@ library(tibbletime)
 source("helper_functions.R")
 
 sim1_parameter = expand.grid(obs_error = seq(0.01, 1, length.out = 5),
-                             rate_of_change = seq(0.0001, 0.001, length.out = 5))
+                             rate_of_change = seq(0.0001, 0.01, length.out = 10))
 sim1_parameter$replicate <- 1:nrow(sim1_parameter)
 
 n_sim1 = nrow(sim1_parameter)
