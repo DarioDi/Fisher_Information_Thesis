@@ -18,12 +18,13 @@ params_unchanging <-
        d = 0.5       #Stocking rate for forage fish
   ) 
 
-time_series <- seq(0,600,length.out = 100)
+time_series <- seq(0,10000,length.out = 1000)
+init_cond_default <- c(P = 77, F = 0.067, J = 9.37)
 
 
 run_simulation <- function(parameters,   # single row dataframe with the varying parameters
                            time_seq = time_series, 
-                           init_cond = c(P = 77, F = 0.067, J = 9.37), # Init conditions
+                           init_cond = init_cond_default, # Init conditions
                            other_params = params_unchanging){
   
   # 1. Run and the solve equation system
@@ -125,7 +126,7 @@ calc_fisher_current <- function(parameters, predictions,
 
 
 calc_regime_shift <- function(parameters, other_params = params_unchanging,
-                              init_cond = c(P = 77, F = 0.067, J = 9.37)){
+                              init_cond = init_cond_default){
   
   rate_1 <- parameters$rate_of_change
   model_parameters_1 <- append(other_params, 
