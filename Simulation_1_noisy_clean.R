@@ -7,8 +7,14 @@ library(tibbletime)
 
 source("helper_functions.R")
 
+
+set.seed(10)
+
+
+
 sim1_parameter = expand.grid(obs_error = seq(0.00, 0.3, length.out = 7),
-                             rate_of_change = seq(0.0005, 0.0015, length.out = 11))
+                             rate_of_change = seq(0.0005, 0.0015, length.out = 11),
+                             replicate = 1:10)
 
 sim1_parameter$replicate <- 1:nrow(sim1_parameter)
 
@@ -49,6 +55,14 @@ for(i in seq_len(length.out = n_sim1)){
 
 View(sim1_parameter)
 
+sim1_parameter_summary = sim1_parameter %>%
+  group_by(obs_error, rate_of_change)%>%
+  summarize(fisher_min_mean = mean(sim_fisher_min),
+            log_fisher_min_mean = mean(sim_log_fisher_min),
+            regime_shift_time_mean = mean(regime_shift_time),
+            fisher_diff_mean = mean(regime_shift_time-sim_fisher_min),
+            fisher_log_diff_mean = mean(regime_shift_time-sim_log_fisher_min))
+
 
 ggplot(sim1_parameter, aes(y = obs_error, x = rate_of_change, fill = sim_fisher_min)) +
   geom_tile()
@@ -56,4 +70,5 @@ ggplot(sim1_parameter, aes(y = obs_error, x = rate_of_change, fill = sim_log_fis
   geom_tile()
 ggplot(sim1_parameter, aes(y = obs_error, x = rate_of_change, fill = regime_shift_time)) +
   geom_tile()
+
 

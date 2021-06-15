@@ -48,15 +48,17 @@ run_simulation <- function(parameters,   # single row dataframe with the varying
 
 extract_gam_predictions <- function(parameters, sim, time_seq = time_series){
   
-  set.seed(10)
+  
   
   
   # 1. apply the observation error
   err <- parameters$obs_error
   
-  sim[,"P"] = sim[,"P"]*exp(rnorm(100,0,sd = err))
-  sim[,"J"] = sim[,"J"]*exp(rnorm(100,0,sd = err))
-  sim[,"F"] = sim[,"F"]*exp(rnorm(100,0,sd = err))
+  n_steps <- length(time_seq)
+  
+  sim[,"P"] = sim[,"P"]*exp(rnorm(n_steps,0,sd = err))
+  sim[,"J"] = sim[,"J"]*exp(rnorm(n_steps,0,sd = err))
+  sim[,"F"] = sim[,"F"]*exp(rnorm(n_steps,0,sd = err))
   
   # 2. Run gams
   
@@ -179,6 +181,7 @@ calc_regime_shift <- function(parameters, other_params = params_unchanging,
   
   #Find the regime shift point as the place where the eigen value of the Jacobian goes to zero (or just above)
   regime_shift <- stable_states_1$time[stable_states_1$eigen==max(stable_states_1$eigen)]
+  if(length(regime_shift)>1) warning("multiple regime shifts found") 
   
   return(min(regime_shift)) # TODO verify if minimum is appropriate here
   
