@@ -17,7 +17,7 @@ set.seed(10)
 #set parameters for changing observation error and rate of change
 
 sim2_parameter = expand.grid(obs_error = seq(0.00, 0.3, length.out = 7),
-                             rate_of_change = seq(-0.0001, -0.0010, length.out = 10),
+                             rate_of_change = seq(-0.0002, -0.0011, length.out = 10),
                              replicate = 1:10)
 
 sim2_parameter$replicate <- 1:nrow(sim2_parameter)
