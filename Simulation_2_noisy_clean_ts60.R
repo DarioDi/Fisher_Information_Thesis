@@ -1,4 +1,4 @@
-#Simulation 1 - e is changing parameter and time step is 60 (model_parameters_1_ts60) ####
+#Simulation 2 - a_PF is changing parameter and time step is 600 (model_parameters_2) ####
 
 library(deSolve)
 library(ggplot2)
@@ -17,7 +17,7 @@ set.seed(10)
 #set parameters for changing observation error and rate of change
 
 sim2_parameter_ts60 = expand.grid(obs_error = seq(0.00, 0.3, length.out = 7),
-                                  rate_of_change = seq(-0.0001, -0.0010, length.out = 10),
+                                  rate_of_change = seq(-0.0002, -0.0011, length.out = 10),
                                   replicate = 1:10)
 
 sim2_parameter_ts60$replicate <- 1:nrow(sim2_parameter_ts60)
@@ -91,7 +91,7 @@ sim2_parameter_summary_ts60 = sim2_parameter_ts60 %>%
 ggplot(sim2_parameter_summary_ts60, aes(y = obs_error, x = rate_of_change, 
                                         fill = fisher_diff_mean_ts60)) +
   ggtitle("Fisher Information Difference, Time step of 60")+
-  xlab("rate of change of parameter e")+
+  xlab("rate of change of parameter a_PF")+
   ylab("observation error")+
   geom_tile()+
   scale_fill_gradient2()
@@ -101,11 +101,8 @@ ggplot(sim2_parameter_summary_ts60, aes(y = obs_error, x = rate_of_change,
 ggplot(sim2_parameter_summary_ts60, aes(y = obs_error, x = rate_of_change,
                                         fill = fisher_log_diff_mean_ts60)) +
   ggtitle("Log Fisher Information Difference, Time step of 60")+
-  xlab("rate of change of parameter e")+
+  xlab("rate of change of parameter a_PF")+
   ylab("observation error")+
   geom_tile()+
   scale_fill_gradient2()
-
-
-
 
