@@ -17,7 +17,7 @@ set.seed(10)
 #set parameters for changing observation error and rate of change
 
 sim1_parameter_ts60 = expand.grid(obs_error = seq(0.00, 0.3, length.out = 7),
-                             rate_of_change = seq(0.0005, 0.0015, length.out = 11),
+                             rate_of_change = seq(0.0006, 0.0016, length.out = 11),
                              replicate = 1:10)
 
 sim1_parameter_ts60$replicate <- 1:nrow(sim1_parameter_ts60)
@@ -90,7 +90,7 @@ sim1_parameter_summary_ts60 = sim1_parameter_ts60 %>%
 
 ggplot(sim1_parameter_summary_ts60, aes(y = obs_error, x = rate_of_change, 
                                    fill = fisher_diff_mean_ts60)) +
-  ggtitle("Fisher Information Difference, Time step of 600")+
+  ggtitle("Fisher Information Difference, Time step of 60")+
   xlab("rate of change of parameter e")+
   ylab("observation error")+
   geom_tile()+
@@ -100,7 +100,7 @@ ggplot(sim1_parameter_summary_ts60, aes(y = obs_error, x = rate_of_change,
 
 ggplot(sim1_parameter_summary_ts60, aes(y = obs_error, x = rate_of_change,
                                    fill = fisher_log_diff_mean_ts60)) +
-  ggtitle("Log Fisher Information Difference, Time step of 600")+
+  ggtitle("Log Fisher Information Difference, Time step of 60")+
   xlab("rate of change of parameter e")+
   ylab("observation error")+
   geom_tile()+
